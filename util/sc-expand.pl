@@ -34,6 +34,48 @@ my @lisotimes;
 my $lastring = time;
 my $nextring;
 
+my $spcdir = $ENV{'HOME'} . '/.metatemple-bell';
+my $comfil = $spcdir . '/itrup.cm';
+
+my $continuar;
+
+sub comfilproc {
+  my $lc_cm;
+  my $lc_cont;
+  my @lc_lines;
+  my $lc_line;
+  if ( ! ( -f $comfil ) ) { return; }
+  sleep(2);
+  $lc_cm = 'cat ' . &plm::rgx::bsc($comfil);
+  $lc_cont = `$lc_cm`;
+  system('rm','-rf',$comfil);
+  @lc_lines = split(/\n/,$lc_cont);
+  foreach $lc_line (@lc_lines) { &comfillin($lc_line); }
+}
+
+sub comfillin {
+  my $lc_line;
+  my @lc_comp;
+  
+  @lc_comp = split(' ',$_[0]);
+  $lc_line = $lc_comp[0];
+  
+  if ( $lc_line eq 'rew' )
+  {
+    $continuar = 0;
+    $expandi = int($expandi * ( 1 - ( $percengrow / 100 ) ) );
+    if ( $expandi < $minexpandi ) { $expandi = $minexpandi; }
+    return;
+  }
+  
+  if ( $lc_line eq 'pcen' )
+  {
+    $percengrow = $lc_comp[1];
+    if ( $percengrow < 1 ) { $percengrow = 1; }
+    return;
+  }
+}
+
 &plm::rgx::setopt('-t',\&opto__no__t__x);
 sub opto__no__t__x {
   my $lc_set;
@@ -69,6 +111,7 @@ sub zangry {
   my $lc_slp;
   
   $lastring = $nextring;
+  $continuar = 10;
   
   print "\nRINGING";
   {
@@ -121,6 +164,12 @@ sub zangry {
       #system('caffeinate -s -t 1');
       if ( $lc_rem > 8 )
       {
+        &comfilproc();
+        if ( $continuar < 5 )
+        {
+          $nextring = time;
+          return;
+        }
         $lc_slp = 3;
         if ( $lc_rem > 20 ) { $lc_slp = 4; }
       }
