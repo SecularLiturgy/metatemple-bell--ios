@@ -25,8 +25,11 @@ my $expandi = 20;
 my $minexpandi = 5;
 my $percengrow = 10;
 
+my $chosenopt = '-d';
+
 my $spancaff = 30;
 my $durcaff = int($spancaff * 1.8);
+$durcaff = 3; # For now, let us _not_ have caffeinations time-overlap
 my $lastcaff = int(time - ( 2 * $spancaff) );
 
 my @lisotimes;
@@ -57,14 +60,17 @@ sub comfillin {
   my $lc_line;
   my @lc_comp;
   
-  @lc_comp = split(' ',$_[0]);
+  @lc_comp = split(':',$_[0]);
   $lc_line = $lc_comp[0];
+  
+  if ( $lc_line eq '' ) { return; }
   
   if ( $lc_line eq 'rew' )
   {
     $continuar = 0;
     $expandi = int($expandi * ( 1 - ( $percengrow / 100 ) ) );
     if ( $expandi < $minexpandi ) { $expandi = $minexpandi; }
+    print "Rewinding the expansion:\n";
     return;
   }
   
@@ -72,8 +78,15 @@ sub comfillin {
   {
     $percengrow = $lc_comp[1];
     if ( $percengrow < 1 ) { $percengrow = 1; }
+    print "Expansory percentage set to: " . $percengrow . " :\n";
     return;
   }
+  
+  print "\n";
+  
+  print "Unfamiliar command: " . $lc_line . " :\n";
+  
+  print "\n";
 }
 
 &plm::rgx::setopt('-t',\&opto__no__t__x);
@@ -88,6 +101,16 @@ sub opto__no__t__x {
   if ( $expandi < $minexpandi ) { $expandi = $minexpandi; }
 }
 
+&plm::rgx::setopt('-u',\&opto__no__u__x);
+sub opto__no__u__x {
+  $chosenopt = '-u';
+}
+
+&plm::rgx::setopt('-c',\&opto__no__c__x);
+sub opto__no__c__x {
+  $durcaff = int($spancaff * 1.8);
+}
+
 &plm::rgx::runopts();
 
 sub retocaff {
@@ -97,7 +120,7 @@ sub retocaff {
   if ( $lc_now < $lastcaff ) { return; }
   $lastcaff = int( $lc_now + $spancaff + 0.2 );
   
-  $lc_cm = 'caffeinate -d -t ' . $durcaff;
+  $lc_cm = 'caffeinate ' . $chosenopt . ' -t ' . $durcaff;
   $lc_cm = '( ' . $lc_cm . ' ) &bg';
   $lc_cm = '( ' . $lc_cm . ' ) > /dev/null 2> /dev/null';
   system($lc_cm);

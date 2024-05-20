@@ -14,7 +14,7 @@ while ( &plm::rgx::remain() )
 {
   print TAK $btween;
   print TAK &plm::rgx::rgget();
-  $btween = ' ';
+  $btween = "\n";
 }
 print TAK "\n";
 
